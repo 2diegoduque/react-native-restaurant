@@ -44,6 +44,7 @@ export default class AddReviewRestaurant extends Component {
         let user = firebase.auth().currentUser;
         let data = {
           idUser: user.uid,
+          avatarUser: user.photoURL,
           idRestaurante: this.props.navigation.state.params.id,
           title: validateForm.title,
           review: validateForm.review,
@@ -57,6 +58,7 @@ export default class AddReviewRestaurant extends Component {
               loading: false
             });
             this.refs.toast.show("Comentario enviado correctamente", 100, () => {
+              this.props.navigation.state.params.reloadReviews();
               this.props.navigation.goBack();
             });
           })

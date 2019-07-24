@@ -16,8 +16,8 @@ export default class DetailRestaurant extends Component {
     this.state = {
       reviews: null,
       startReview: null,
-      limitReview: 5,
-      loading: true
+      loading: true,
+      rating: 0
     };
   }
 
@@ -57,7 +57,11 @@ export default class DetailRestaurant extends Component {
     this._checkUserSendReview().then(resolve => {
       if (resolve) {
         let { id, name } = this.props.navigation.state.params;
-        this.props.navigation.navigate("AddReviewRestaurant", { id, name });
+        this.props.navigation.navigate("AddReviewRestaurant", {
+          id,
+          name,
+          reloadReviews: this._loadReview
+        });
       } else {
         this.refs.toast.show("Ya has enviado un comentario", 1000);
       }
@@ -67,19 +71,25 @@ export default class DetailRestaurant extends Component {
   _loadReview = async () => {
     let restaurante_id = this.props.navigation.state.params.id;
     let listReview = [];
-    let queryReviews = db
-      .collection("review")
-      .where("idRestaurante", "==", restaurante_id)
-      .limit(this.state.limitReview);
+    let listRating = [];
+    let queryReviews = db.collection("review").where("idRestaurante", "==", restaurante_id);
     return await queryReviews.get().then(resolve => {
-      // this.setState({
-      //   startReview: resolve.docs(resolve.docs.length - 1)
-      // });
       resolve.forEach(doc => {
         listReview.push(doc.data());
+        listRating.push(doc.data().rating);
       });
+
+      let sum = 0;
+      if (listRating.length) {
+        listRating.map(value => {
+          sum += value;
+        });
+        sum = sum / listRating.length;
+      }
       this.setState({
-        reviews: listReview
+        startReview: resolve.docs[resolve.docs.length - 1],
+        reviews: listReview,
+        rating: sum.toFixed(2)
       });
     });
   };
@@ -109,7 +119,11 @@ export default class DetailRestaurant extends Component {
       <View style={styles.viewRowReview}>
         <View style={styles.viewRowImageReview}>
           <Avatar
-            source={{ uri: "https://api.adorable.io/avatars/285/abott@adorable.png" }}
+            source={{
+              uri: item.item.avatarUser
+                ? item.item.avatarUser
+                : "https://api.adorable.io/avatars/285/abott@adorable.png"
+            }}
             size="large"
             rounded
             containerStyle={styles.containerAvataruserReview}
@@ -118,7 +132,7 @@ export default class DetailRestaurant extends Component {
         <View style={styles.viewInfoReview}>
           <Text style={styles.titleReview}>{item.item.title}</Text>
           <Text style={styles.reviewText}>{item.item.review}</Text>
-          <Rating imageSize={15} startingValue={item.item.rating} />
+          <Rating imageSize={15} startingValue={item.item.rating} readonly />
           <Text style={styles.reviewDate}>
             {createReview.getDate()}/{createReview.getMonth() + 1}/{createReview.getFullYear()} -{" "}
             {createReview.getHours()}:{createReview.getMinutes()}
@@ -129,7 +143,7 @@ export default class DetailRestaurant extends Component {
   };
 
   render() {
-    const { reviews } = this.state;
+    const { reviews, rating } = this.state;
     let { name, city, address, description, image } = this.props.navigation.state.params;
     const listInfoItem = [
       {
@@ -150,7 +164,10 @@ export default class DetailRestaurant extends Component {
         </View>
 
         <View style={styles.viewContainerInfo}>
-          <Text style={styles.nameRestaurant}>{name}</Text>
+          <View style={styles.viewContainerNameRating}>
+            <Text style={styles.nameRestaurant}>{name}</Text>
+            <Rating style={styles.containerRating} imageSize={20} readonly startingValue={rating} />
+          </View>
           <Text style={styles.descriptionRestaurant}>{description}</Text>
         </View>
 
@@ -268,5 +285,12 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 20,
     fontWeight: "bold"
+  },
+  viewContainerNameRating: {
+    flexDirection: "row"
+  },
+  containerRating: {
+    position: "absolute",
+    right: 0
   }
 });
