@@ -54,6 +54,12 @@ const topFiveScreenStack = createStackNavigator({
     navigationOptions: ({ navigation }) => ({
       title: "Top Five"
     })
+  },
+  DetailRestaurant: {
+    screen: DetailRestaurantScreen,
+    navigationOptions: ({ navigation }) => ({
+      title: navigation.state.params.name
+    })
   }
 });
 

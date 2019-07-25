@@ -54,12 +54,23 @@ export default class AddReviewRestaurant extends Component {
         db.collection("review")
           .add(data)
           .then(() => {
-            this.setState({
-              loading: false
-            });
-            this.refs.toast.show("Comentario enviado correctamente", 100, () => {
-              this.props.navigation.state.params.reloadReviews();
-              this.props.navigation.goBack();
+            let restaurantRef = db
+              .collection("restaurants")
+              .doc(this.props.navigation.state.params.id);
+
+            restaurantRef.get().then(resolve => {
+              let ratingTotal = resolve.data().ratingTotal + ratingValue;
+              let quantityVoting = resolve.data().quantityVoting + 1;
+              let rating = ratingTotal / quantityVoting;
+              restaurantRef.update({ rating, ratingTotal, quantityVoting }).then(() => {
+                this.setState({
+                  loading: false
+                });
+                this.refs.toast.show("Comentario enviado correctamente", 100, () => {
+                  this.props.navigation.state.params.reloadReviews();
+                  this.props.navigation.goBack();
+                });
+              });
             });
           })
           .catch(error => {
