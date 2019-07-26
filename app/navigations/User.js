@@ -69,6 +69,12 @@ const searchScreenStack = createStackNavigator({
     navigationOptions: ({ navigation }) => ({
       title: "Buscar"
     })
+  },
+  DetailRestaurant: {
+    screen: DetailRestaurantScreen,
+    navigationOptions: ({ navigation }) => ({
+      title: navigation.state.params.name
+    })
   }
 });
 
