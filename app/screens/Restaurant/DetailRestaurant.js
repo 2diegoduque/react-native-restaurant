@@ -6,7 +6,6 @@ import Toast from "react-native-easy-toast";
 import firebaseApp from "../../utils/FireBase";
 import firebase from "firebase/app";
 import "firebase/firestore";
-import { childContextTypes } from "react-native/Libraries/Modal/Modal";
 const db = firebase.firestore(firebaseApp);
 
 export default class DetailRestaurant extends Component {
